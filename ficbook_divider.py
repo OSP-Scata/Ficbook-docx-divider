@@ -2,12 +2,9 @@ import os
 import tkinter as tk
 from tkinter import filedialog
 import docx
-from docx.oxml.text.paragraph import CT_P
-from docx.oxml.table import CT_Tbl
-from docx.shared import Pt
 
 
-def open_file():
+def open_file():  # открытие файла
     ready['text'] = ''
     selected_file['text'] = ''
     file = filedialog.askopenfile(
@@ -23,7 +20,7 @@ def open_file():
         selected_file['text'] = filename
 
 
-def submit():
+def submit():  # функция, разделяющая файл
     divider_text = divider.get().rstrip('\n')
     if not divider_text:
         ready['text'] = 'Введите разделитель!'
@@ -32,19 +29,24 @@ def submit():
             document = docx.Document(filepath)
             new_doc = docx.Document()
             style = new_doc.styles['Normal']
-            style.paragraph_format.first_line_indent = Pt(15)
+            style.paragraph_format.left_indent = docx.shared.Cm(-0.5)
+            style.paragraph_format.first_line_indent = docx.shared.Cm(0.5)
             part_num = 1
             filename_folder = os.path.join(directory, name)
             os.makedirs(filename_folder, exist_ok=True)
 
+            # сохранение исходного форматирования
             for elem in document.element.body:
-                if isinstance(elem, CT_P):
+                if isinstance(elem, docx.oxml.text.paragraph.CT_P):
                     para = docx.text.paragraph.Paragraph(elem, document)
                     if divider_text in para.text:
                         new_doc.save(f"{filename_folder}/part_{part_num}.docx")
                         new_doc = docx.Document()
                         style = new_doc.styles['Normal']
-                        style.paragraph_format.first_line_indent = Pt(15)
+                        style.paragraph_format.left_indent = docx.shared.Cm(
+                            -0.5)
+                        style.paragraph_format.first_line_indent = \
+                            docx.shared.Cm(0.5)
                         part_num += 1
                         continue
                     new_para = new_doc.add_paragraph()
@@ -55,16 +57,20 @@ def submit():
                         new_run.font.size = run.font.size
                         new_run.font.name = run.font.name
 
-                elif isinstance(elem, CT_Tbl):
+                # если в тексте попалась таблица
+                elif isinstance(elem, docx.oxml.table.CT_Tbl):
                     pass
+
+            # сохранение файлов
             new_doc.save(f"{filename_folder}/part_{part_num}.docx")
             ready['text'] = 'Готово!'
         except Exception as e:
             print(e)
 
 
+# GUI
 root = tk.Tk()
-root.title('Разделение фанфика на главы')
+root.title('Разделение DOCX-файла на главы')
 root.geometry('400x275')
 
 import_button = tk.Button(root, text='Импорт .docx', command=open_file)

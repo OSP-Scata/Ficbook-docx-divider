@@ -1,0 +1,2 @@
+pigar generate
+pause
