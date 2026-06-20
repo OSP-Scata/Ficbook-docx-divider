@@ -21,7 +21,7 @@ def open_file():  # открытие файла
 
 
 def submit():  # функция, разделяющая файл
-    divider_text = divider.get().rstrip('\n')
+    divider_text = divider.get().strip()
     if not divider_text:
         ready['text'] = 'Введите разделитель!'
     else:
